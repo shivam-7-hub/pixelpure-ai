@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PixelPure - HD AI</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; text-align: center; background: #eceff1; padding: 30px; }
+        .box { max-width: 450px; margin: auto; background: white; padding: 30px; border-radius: 20px; shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        button { background: #2196F3; color: white; border: none; padding: 12px 25px; border-radius: 8px; font-size: 16px; cursor: pointer; transition: 0.3s; }
+        button:disabled { background: #ccc; }
+        img { max-width: 100%; border-radius: 10px; margin-top: 20px; border: 2px solid #ddd; }
+        #loader { display: none; color: #2196F3; font-weight: bold; margin-top: 15px; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h2>PixelPure AI ✨</h2>
+        <input type="file" id="imgInp" accept="image/*" style="margin-bottom: 20px;">
+        <br>
+        <button id="btn" onclick="go()">HD Mein Badlo</button>
+        <div id="loader">AI Kaam Kar Raha Hai... (20-30 Sec Rukein)</div>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        async function go() {
+            const inp = document.getElementById('imgInp');
+            const btn = document.getElementById('btn');
+            const loader = document.getElementById('loader');
+            const resDiv = document.getElementById('result');
+
+            if (!inp.files[0]) return alert("Photo chuno!");
+
+            btn.disabled = true;
+            loader.style.display = "block";
+            resDiv.innerHTML = "";
+
+            const reader = new FileReader();
+            reader.readAsDataURL(inp.files[0]);
+            reader.onload = async () => {
+                try {
+                    const response = await fetch('/.netlify/functions/upscale', {
+                        method: 'POST',
+                        body: JSON.stringify({ image: reader.result }),
+                    });
+
+                    const data = await response.json();
+                    if (data.output) {
+                        resDiv.innerHTML = `<h3>Taiyaar Hai!</h3><img src="${data.output}"><br><a href="${data.output}" target="_blank">Download Karein</a>`;
+                    } else {
+                        alert("Error: " + data.error);
+                    }
+                } catch (e) {
+                    alert("Network error!");
+                } finally {
+                    btn.disabled = false;
+                    loader.style.display = "none";
+                }
+            };
+        }
+    </script>
+</body>
+</html>
+
